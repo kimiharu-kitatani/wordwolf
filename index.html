@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ワードウルフ</title></head>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ワードウルフ</title>
+<link rel="stylesheet" href="styles.css">
+</head>
 <body>
-<script src="c00.js"></script>
-<script src="c01.js"></script>
-<script src="c02.js"></script>
-<script src="c03.js"></script>
-<script src="c04.js"></script>
-<script src="c05.js"></script>
-<script src="c06.js"></script>
-<script src="c07.js"></script>
-<script src="c08.js"></script>
-<script src="c09.js"></script>
-<script src="c10.js"></script>
-<script src="c11.js"></script>
-<script src="c12.js"></script>
-<script src="c13.js"></script>
-<script src="c14.js"></script>
-<script src="c15.js"></script>
-<script>document.open();document.write((window.CHUNKS||[]).join(""));document.close();</script>
-</body></html>
+<div class="app" id="app">
+  <header class="header">
+    <div class="logo">🐺 ワードウルフ</div>
+    <div class="header-bar">
+      <div class="phase-tag" id="phaseTag">セットアップ</div>
+      <button type="button" class="btn-abort" id="btnAbort" aria-label="このゲームだけやり直す">このゲームをやめる</button>
+    </div>
+  </header>
+  <main class="card" id="main"></main>
+</div>
+<script src="wordbank.js"></script>
+<script src="app-part1.js"></script>
+<script src="app-part2.js"></script>
+</body>
+</html>

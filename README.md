@@ -26,4 +26,4 @@ python3 -m http.server 8080
 
 ## 技術
 
-単一の `index.html`（HTML / CSS / JavaScript）で完結しています。ビルド不要です。
+HTML / CSS / JavaScript に分割しています。ビルド不要です。`index.html` を開いてください。
