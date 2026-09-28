@@ -4,7 +4,632 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ワードウルフ</title>
-<link rel="stylesheet" href="styles.css">
+<style>
+:root {
+  --bg: #1a1520;
+  --bg2: #241c2e;
+  --card: #2e2438;
+  --card2: #3a2d48;
+  --accent: #ff6b9d;
+  --accent2: #ffc857;
+  --wolf: #c44dff;
+  --villager: #5ad4a0;
+  --text: #f5f0fa;
+  --muted: #a894b8;
+  --danger: #ff5c5c;
+  --ok: #5ad4a0;
+  --radius: 16px;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(196,77,255,.18), transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(255,107,157,.15), transparent 45%),
+    var(--bg);
+  min-height: 100dvh;
+}
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: 16px 16px 28px;
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  text-align: center;
+  padding: 12px 0 20px;
+}
+.logo {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.phase-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  background: var(--card2);
+  color: var(--accent2);
+  letter-spacing: .08em;
+}
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.btn-abort {
+  display: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,92,92,.45);
+  background: rgba(255,92,92,.12);
+  color: #ff8a8a;
+  font-size: .75rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: .04em;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-abort:active { transform: scale(.96); opacity: .85; }
+.btn-abort.visible { display: inline-block; }
+.btn-peek {
+  display: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,200,87,.45);
+  background: rgba(255,200,87,.12);
+  color: var(--accent2);
+  font-size: .75rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: .04em;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-peek:active { transform: scale(.96); opacity: .85; }
+.btn-peek.visible { display: inline-block; }
+.pick-list { display: grid; gap: 10px; margin: 12px 0; }
+.pick-opt {
+  padding: 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.pick-opt:active { transform: scale(.98); border-color: var(--accent); background: rgba(255,107,157,.12); }
+.vote-log { list-style: none; margin: 8px 0 16px; }
+.vote-log li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+.vote-log .arrow { color: var(--muted); font-weight: 700; margin: 0 4px; }
+.vote-log .hit {
+  font-size: .72rem;
+  font-weight: 800;
+  color: var(--villager);
+  background: rgba(90,212,160,.15);
+  border: 1px solid rgba(90,212,160,.35);
+  border-radius: 999px;
+  padding: 2px 8px;
+  letter-spacing: .04em;
+}
+.words-list { list-style: none; margin: 8px 0 16px; }
+.words-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg2);
+  border-radius: 12px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.words-list .wname { font-weight: 800; min-width: 4.5rem; }
+.words-list .wword {
+  flex: 1;
+  font-weight: 700;
+  color: var(--accent2);
+  word-break: keep-all;
+}
+.words-list .wolf-tag {
+  font-size: .72rem;
+  font-weight: 800;
+  color: #e0a0ff;
+  background: rgba(196,77,255,.2);
+  border: 1px solid rgba(196,77,255,.4);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.words-list li.is-wolf {
+  border: 1px solid rgba(196,77,255,.35);
+  background: rgba(196,77,255,.08);
+}
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255,255,255,.06);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+h2 {
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+  color: var(--accent2);
+}
+h3 { font-size: 1rem; margin: 14px 0 8px; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.hint {
+  background: rgba(255,200,87,.1);
+  border: 1px solid rgba(255,200,87,.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: .85rem;
+  color: var(--accent2);
+  margin: 12px 0;
+  line-height: 1.45;
+}
+label {
+  display: block;
+  font-size: .85rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+input[type="text"], select, input[type="number"] {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color .15s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%23a894b8' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.row { display: flex; gap: 10px; align-items: flex-end; }
+.row > * { flex: 1; }
+.btn {
+  display: block;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .12s, opacity .12s, filter .12s;
+  font-family: inherit;
+  letter-spacing: .04em;
+  margin-top: 10px;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #ff8f6b);
+  color: #1a1020;
+  box-shadow: 0 4px 16px rgba(255,107,157,.35);
+}
+.btn-secondary {
+  background: var(--card2);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,.1);
+}
+.btn-wolf {
+  background: linear-gradient(135deg, var(--wolf), #7b5cff);
+  color: #fff;
+}
+.btn-ok {
+  background: linear-gradient(135deg, var(--villager), #3ecf8e);
+  color: #0a2018;
+}
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #ff8a5c);
+  color: #fff;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed rgba(255,255,255,.15);
+  font-size: .9rem;
+  padding: 12px;
+}
+.btn-row { display: flex; gap: 10px; margin-top: 10px; }
+.btn-row .btn { flex: 1; margin-top: 0; }
+.player-list { list-style: none; margin: 8px 0; }
+.player-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.player-list input { margin-bottom: 0; }
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+.stepper button {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: var(--card2);
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.stepper .val {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+.reveal-cover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 220px;
+  gap: 16px;
+}
+.reveal-cover .pass-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(255,107,157,.4));
+}
+.reveal-cover .who {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+.word-card {
+  background: linear-gradient(160deg, var(--card2), var(--bg2));
+  border: 2px solid rgba(255,200,87,.35);
+  border-radius: 20px;
+  padding: 36px 20px;
+  text-align: center;
+  margin: 16px 0;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.word-card .word {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: var(--accent2);
+  word-break: keep-all;
+}
+.word-card .role-hint {
+  font-size: .8rem;
+  color: var(--muted);
+}
+.timer-display {
+  text-align: center;
+  padding: 28px 0;
+}
+.timer-display .time {
+  font-size: 4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+  color: var(--accent2);
+  line-height: 1;
+}
+.timer-display .time.warn { color: var(--danger); animation: pulse 1s ease infinite; }
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: .6; }
+}
+.theme-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(196,77,255,.2);
+  color: var(--wolf);
+  font-weight: 700;
+  font-size: .95rem;
+  margin: 8px auto;
+}
+.vote-grid {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.vote-opt {
+  padding: 16px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color .15s, background .15s;
+}
+.vote-opt.selected {
+  border-color: var(--accent);
+  background: rgba(255,107,157,.15);
+}
+.vote-opt:disabled { opacity: .35; }
+.result-banner {
+  text-align: center;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.result-banner.villagers {
+  background: rgba(90,212,160,.15);
+  border: 2px solid var(--villager);
+  color: var(--villager);
+}
+.result-banner.wolves {
+  background: rgba(196,77,255,.15);
+  border: 2px solid var(--wolf);
+  color: #e0a0ff;
+}
+.result-block {
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.result-block .label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; }
+.result-block .value { font-size: 1.15rem; font-weight: 700; }
+.tally-list { list-style: none; margin: 8px 0 16px; }
+.tally-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.tally-list li.accused {
+  border: 2px solid var(--accent);
+  background: rgba(255,107,157,.12);
+}
+.spacer { flex: 1; }
+.hidden { display: none !important; }
+.footer-actions { margin-top: auto; padding-top: 16px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+.chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--bg2);
+  border: 2px solid transparent;
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.chip.on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(255,107,157,.15);
+}
+.roster-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 10px;
+}
+.roster-chip {
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: var(--bg2);
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s, background .15s, color .15s, opacity .15s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.roster-chip.on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(255,107,157,.18);
+}
+.roster-chip:active { transform: scale(.97); }
+.roster-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.roster-meta .count {
+  font-weight: 800;
+  color: var(--accent2);
+}
+.wolf-fixed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.wolf-fixed .badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(196,77,255,.25);
+  color: #e0a0ff;
+  font-size: .85rem;
+}
+.custom-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.custom-pair input { margin-bottom: 0; }
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.progress-dots span {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--card2);
+}
+.progress-dots span.done { background: var(--villager); }
+.progress-dots span.current { background: var(--accent); transform: scale(1.3); }
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,5,15,.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+.confirm-box {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: var(--shadow);
+}
+.confirm-box p { margin-bottom: 16px; line-height: 1.5; }
+
+.score-help {
+  background: rgba(90,212,160,.08);
+  border: 1px solid rgba(90,212,160,.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: .8rem;
+  color: var(--muted);
+  margin: 8px 0 14px;
+  line-height: 1.55;
+}
+.score-help strong { color: var(--accent2); font-weight: 700; }
+.rank-list { list-style: none; margin: 8px 0 16px; }
+.rank-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg2);
+  border-radius: 12px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.rank-list .rank {
+  width: 1.6rem;
+  text-align: center;
+  color: var(--accent2);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.rank-list .pname { flex: 1; min-width: 0; word-break: break-all; }
+.rank-list .pts {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--text);
+}
+.rank-list .delta {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--villager);
+  min-width: 2.4rem;
+  text-align: right;
+}
+.rank-list .delta.zero { color: var(--muted); }
+.rank-list li.top {
+  border: 2px solid rgba(255,200,87,.4);
+  background: rgba(255,200,87,.08);
+}
+.setup-scores {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.setup-scores .mini-rank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+.setup-scores .mini-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--bg2);
+  font-size: .8rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.setup-scores .mini-chip em {
+  color: var(--accent2);
+  font-style: normal;
+  margin-left: 4px;
+}
+</style>
 </head>
 <body>
 <div class="app" id="app">
@@ -12,13 +637,985 @@
     <div class="logo">🐺 ワードウルフ</div>
     <div class="header-bar">
       <div class="phase-tag" id="phaseTag">セットアップ</div>
+      <button type="button" class="btn-peek" id="btnPeek" aria-label="自分の言葉を確認">言葉を確認</button>
       <button type="button" class="btn-abort" id="btnAbort" aria-label="このゲームだけやり直す">このゲームをやめる</button>
     </div>
   </header>
   <main class="card" id="main"></main>
 </div>
-<script src="wordbank.js"></script>
-<script src="app-part1.js"></script>
-<script src="app-part2.js"></script>
+
+<script>
+/* ========== Word pairs (majority / wolf) ========== */
+const WORD_BANK = {
+  "食べ物": [
+    ["りんご", "なし"],
+    ["ラーメン", "うどん"],
+    ["寿司", "刺身"],
+    ["カレー", "シチュー"],
+    ["チョコレート", "キャラメル"],
+    ["おにぎり", "サンドイッチ"],
+  ],
+  "動物": [
+    ["犬", "狼"],
+    ["猫", "トラ"],
+    ["パンダ", "コアラ"],
+    ["ペンギン", "アザラシ"],
+    ["うさぎ", "ハムスター"],
+  ],
+  "場所": [
+    ["図書館", "本屋"],
+    ["公園", "遊園地"],
+    ["温泉", "銭湯"],
+    ["空港", "駅"],
+    ["学校", "塾"],
+  ],
+  "職業": [
+    ["医者", "看護師"],
+    ["教師", "塾講師"],
+    ["料理人", "パティシエ"],
+    ["警察官", "消防士"],
+    ["美容師", "理容師"],
+  ],
+  "乗り物": [
+    ["電車", "バス"],
+    ["自転車", "バイク"],
+    ["飛行機", "ヘリコプター"],
+    ["タクシー", "ハイヤー"],
+  ],
+  "スポーツ": [
+    ["サッカー", "ラグビー"],
+    ["野球", "ソフトボール"],
+    ["テニス", "バドミントン"],
+    ["水泳", "ダイビング"],
+  ],
+  "日常": [
+    ["歯ブラシ", "歯磨き粉"],
+    ["傘", "レインコート"],
+    ["スマホ", "タブレット"],
+    ["布団", "ベッド"],
+    ["お茶", "コーヒー"],
+  ],
+  "季節": [
+    // Generative groups: pick 2 distinct words from one group at deal time
+    ["チューリップ", "菜の花", "つつじ", "あじさい"],
+    ["ひまわり", "コスモス", "梅", "藤"],
+    ["せみ", "ほたる", "かまきり", "かたつむり"],
+    ["つばめ", "ひぐらし", "とんぼ"],
+    ["落ち葉", "すすき", "どんぐり", "まつぼっくり"],
+    ["雪だるま", "かまくら", "氷柱", "霜柱"],
+    ["お花見", "入学式", "卒業式"],
+    ["盆踊り", "夏祭り", "灯籠流し"],
+    ["七夕", "十五夜", "端午の節句", "七五三"],
+    ["クリスマス", "大晦日", "節分"],
+    ["年賀状", "おせち", "お雑煮"],
+    ["夏休み", "冬休み", "春休み", "ゴールデンウィーク"],
+    ["みかん", "いちご", "すいか", "ぶどう"],
+    ["さんま", "さつまいも", "きのこ", "くり"],
+    ["麦茶", "ラムネ", "サイダー"],
+    ["鍋", "ぞうに", "肉まん", "甘酒"],
+    ["半袖", "長袖", "カーディガン", "ダウンジャケット"],
+    ["長靴", "日傘", "マフラー", "手袋"],
+    ["潮干狩り", "登山", "雪遊び", "ピクニック"],
+    ["入梅", "土用の丑", "彼岸", "立春"],
+  ],
+};
+
+/* Themes listed in WORD_GROUPS use generative pick (2 words from a group).
+   Other themes keep fixed [majority, wolf] pairs in WORD_BANK. */
+const WORD_GROUPS_THEMES = new Set(["季節"]);
+
+const THEMES = Object.keys(WORD_BANK);
+const PHASES = {
+  setup: "セットアップ",
+  deal: "配り中",
+  reveal: "言葉を確認",
+  discuss: "ディスカッション",
+  vote: "投票",
+  result: "結果発表",
+};
+
+const state = {
+  phase: "setup",
+  playerCount: 5,
+  wolfCount: 1,
+  rosterSelected: null, // boolean[] aligned with DEFAULT_ROSTER
+  players: [],
+  themeMode: "ランダム", // or theme name or "カスタム"
+  customMajority: "",
+  customWolf: "",
+  majorityWord: "",
+  wolfWord: "",
+  theme: "",
+  assignments: [], // {name, word, isWolf, order}
+  revealIndex: 0,
+  revealShown: false,
+  discussSeconds: 180,
+  discussLeft: 180,
+  timerId: null,
+  voteIndex: 0,
+  votes: {}, // voterName -> targetName
+  selectedVote: null,
+  accused: null,
+  runoffCandidates: null,
+  isRunoff: false,
+  _scoresApplied: false,
+  roundDeltas: {},
+  peek: null, // null | { step: 'pick'|'cover'|'show', name: string|null, resumeTimer: boolean }
+};
+
+function $(sel) { return document.querySelector(sel); }
+function el(html) {
+  const t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstChild;
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function escapeHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+
+const SCORE_KEY = "wordwolf_scores";
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(SCORE_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === "object" && !Array.isArray(obj)) ? obj : {};
+  } catch (_) {
+    return {};
+  }
+}
+function saveScores(map) {
+  try {
+    localStorage.setItem(SCORE_KEY, JSON.stringify(map));
+  } catch (_) {}
+}
+function getPlayerScore(name) {
+  const scores = loadScores();
+  const n = Number(scores[name]);
+  return Number.isFinite(n) ? n : 0;
+}
+function resetAllScores() {
+  saveScores({});
+  state.roundDeltas = {};
+}
+function applyRoundScores(villagersWin) {
+  const scores = loadScores();
+  const deltas = {};
+  const wolfNames = new Set(state.assignments.filter(a => a.isWolf).map(a => a.name));
+  for (const a of state.assignments) {
+    let d = 0;
+    // 本物のウルフに投票した人は勝敗に関係なく +1
+    const votedFor = state.votes[a.name];
+    if (votedFor && wolfNames.has(votedFor)) d += 1;
+    // ウルフ勝ちならウルフ本人に +2
+    if (!villagersWin && a.isWolf) d += 2;
+    deltas[a.name] = d;
+    scores[a.name] = (Number(scores[a.name]) || 0) + d;
+  }
+  saveScores(scores);
+  state.roundDeltas = deltas;
+}
+function rankingRows(names) {
+  const scores = loadScores();
+  const deltas = state.roundDeltas || {};
+  return [...names]
+    .map((name) => ({
+      name,
+      points: Number(scores[name]) || 0,
+      delta: deltas[name] != null ? deltas[name] : null,
+    }))
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, "ja"));
+}
+function confirmResetScores(after) {
+  if (!confirm("本当にリセットしますか？\\n累計ポイントがすべて0になります。")) return;
+  resetAllScores();
+  if (typeof after === "function") after();
+}
+
+
+function updateAbortButton() {
+  const btn = $("#btnAbort");
+  if (!btn) return;
+  const show = state.phase !== "setup";
+  btn.classList.toggle("visible", show);
+}
+
+function updatePeekButton() {
+  const btn = $("#btnPeek");
+  if (!btn) return;
+  const show = (state.phase === "discuss" || state.phase === "vote") && !state.peek;
+  btn.classList.toggle("visible", show);
+}
+
+function abortToSetup() {
+  if (!confirm("このゲームだけ中断してセットアップに戻りますか？\n累計ポイントはそのままです。")) return;
+  stopTimer();
+  state.peek = null;
+  state._voteUnlocked = false;
+  state.revealShown = false;
+  state.selectedVote = null;
+  // Keep roster selection aligned with current round players; do NOT reset scores
+  ensureRosterSelection();
+  const playing = new Set(state.players);
+  state.rosterSelected = DEFAULT_ROSTER.map((n) => playing.has(n));
+  if (selectedRosterNames().length < 3) {
+    state.rosterSelected = DEFAULT_ROSTER.map(() => true);
+  }
+  setPhase("setup");
+}
+
+function setPhase(p) {
+  state.phase = p;
+  state.peek = null;
+  $("#phaseTag").textContent = PHASES[p] || p;
+  updateAbortButton();
+  updatePeekButton();
+  render();
+}
+
+const DEFAULT_ROSTER = ["きみはる", "よりこ", "ひなた", "ほのか", "ひろと"];
+
+function ensureRosterSelection() {
+  if (!Array.isArray(state.rosterSelected) || state.rosterSelected.length !== DEFAULT_ROSTER.length) {
+    state.rosterSelected = DEFAULT_ROSTER.map(() => true);
+  }
+}
+
+function selectedRosterNames() {
+  ensureRosterSelection();
+  return DEFAULT_ROSTER.filter((_, i) => state.rosterSelected[i]);
+}
+
+function syncPlayersFromRoster() {
+  const names = selectedRosterNames();
+  state.players = names;
+  state.playerCount = names.length;
+  state.wolfCount = 1; // 名簿は最大5人 → ウルフ常に1人
+  return names;
+}
+
+function maxWolves(n) {
+  return n >= 6 ? 2 : 1;
+}
+
+/* ========== SETUP ========== */
+function renderSetup() {
+  ensureRosterSelection();
+  const selected = syncPlayersFromRoster();
+  const selectedCount = selected.length;
+  const canStart = selectedCount >= 3;
+
+  const themesHtml = ["ランダム", ...THEMES, "カスタム"].map(t =>
+    `<button type="button" class="chip ${state.themeMode === t ? "on" : ""}" data-theme="${escapeHtml(t)}">${escapeHtml(t)}</button>`
+  ).join("");
+
+  const rosterHtml = DEFAULT_ROSTER.map((name, i) => {
+    const on = state.rosterSelected[i];
+    return `<button type="button" class="roster-chip ${on ? "on" : ""}" data-ri="${i}" aria-pressed="${on ? "true" : "false"}">${escapeHtml(name)}</button>`;
+  }).join("");
+
+  const customBlock = state.themeMode === "カスタム" ? `
+    <h3>カスタムお題</h3>
+    <div class="custom-pair">
+      <div>
+        <label>多数派の言葉</label>
+        <input type="text" id="customMaj" value="${escapeHtml(state.customMajority)}" maxlength="20" placeholder="例: りんご">
+      </div>
+      <div>
+        <label>ウルフの言葉</label>
+        <input type="text" id="customWolf" value="${escapeHtml(state.customWolf)}" maxlength="20" placeholder="例: なし">
+      </div>
+    </div>
+    <p class="muted">似ている言葉ほど盛り上がります！</p>
+  ` : "";
+
+  const setupRanks = rankingRows(DEFAULT_ROSTER);
+  const setupScoreChips = setupRanks.length
+    ? setupRanks.map(r => `<span class="mini-chip">${escapeHtml(r.name)}<em>${r.points}点</em></span>`).join("")
+    : `<span class="mini-chip">まだポイントはありません</span>`;
+
+  $("#main").innerHTML = `
+    <h2>ゲームの準備</h2>
+    <p class="muted">参加する人を選んで、お題を決めましょう。</p>
+
+    <h3>参加者（3〜5人）</h3>
+    <div class="roster-meta">
+      <span class="muted">タップで参加／不参加</span>
+      <span class="count">${selectedCount} / ${DEFAULT_ROSTER.length}人</span>
+    </div>
+    <div class="roster-chips" id="rosterChips">${rosterHtml}</div>
+    ${canStart ? "" : `<p class="muted" id="rosterTip">3人以上選んでください</p>`}
+
+    <h3>ウルフの人数</h3>
+    <div class="wolf-fixed">
+      <span>1人</span>
+      <span class="badge">固定</span>
+    </div>
+    <p class="muted">この名簿は最大5人なので、ウルフは常に1人です。</p>
+
+    <h3>テーマ</h3>
+    <div class="chip-row" id="themeChips">${themesHtml}</div>
+    ${customBlock}
+
+    <div class="setup-scores" id="setupScores">
+      <h3>累計ポイント</h3>
+      <div class="mini-rank">${setupScoreChips}</div>
+      <p class="muted" style="font-size:.8rem;margin-bottom:4px">同じ端末・同じ名前でポイントが持ち越されます。「もう一回」でもリセットされません。</p>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn btn-primary" id="btnStart" ${canStart ? "" : "disabled"}>ゲーム開始</button>
+      <button class="btn btn-ghost" id="btnResetPtsSetup">ポイントをリセット</button>
+    </div>
+  `;
+
+  $("#rosterChips").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-ri]");
+    if (!c) return;
+    if (state.themeMode === "カスタム") {
+      state.customMajority = ($("#customMaj")?.value || "").trim();
+      state.customWolf = ($("#customWolf")?.value || "").trim();
+    }
+    const i = +c.dataset.ri;
+    state.rosterSelected[i] = !state.rosterSelected[i];
+    renderSetup();
+  });
+  $("#themeChips").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-theme]");
+    if (!c) return;
+    if (state.themeMode === "カスタム") {
+      state.customMajority = ($("#customMaj")?.value || "").trim();
+      state.customWolf = ($("#customWolf")?.value || "").trim();
+    }
+    state.themeMode = c.dataset.theme;
+    renderSetup();
+  });
+  $("#btnStart").addEventListener("click", startGame);
+  $("#btnResetPtsSetup").addEventListener("click", () => {
+    confirmResetScores(() => renderSetup());
+  });
+}
+
+
+function pickTwoFromGroup(group) {
+  if (!Array.isArray(group) || group.length < 2) {
+    return null;
+  }
+  const picked = shuffle(group).slice(0, 2);
+  return { a: picked[0], b: picked[1] };
+}
+
+function pickWordPair() {
+  if (state.themeMode === "カスタム") {
+    const maj = (state.customMajority || $("#customMaj")?.value || "").trim();
+    const wol = (state.customWolf || $("#customWolf")?.value || "").trim();
+    if (!maj || !wol) return { error: "カスタムお題を両方入力してください。" };
+    if (maj === wol) return { error: "多数派とウルフは違う言葉にしてください。" };
+    return { theme: "カスタム", majority: maj, wolf: wol };
+  }
+  let theme = state.themeMode;
+  if (theme === "ランダム") {
+    theme = THEMES[Math.floor(Math.random() * THEMES.length)];
+  }
+  const bank = WORD_BANK[theme];
+  const entry = bank[Math.floor(Math.random() * bank.length)];
+
+  let majority, wolf;
+  if (WORD_GROUPS_THEMES.has(theme) || (Array.isArray(entry) && entry.length > 2)) {
+    const two = pickTwoFromGroup(entry);
+    if (!two) return { error: "お題グループが不正です。" };
+    majority = two.a;
+    wolf = two.b;
+  } else {
+    // Fixed pair: occasionally flip majority/wolf for variety
+    const flip = Math.random() < 0.5;
+    majority = flip ? entry[1] : entry[0];
+    wolf = flip ? entry[0] : entry[1];
+  }
+  return { theme, majority, wolf };
+}
+
+function startGame() {
+  // From setup: rebuild from chips. From「もう一回」: keep current state.players.
+  if (state.phase === "setup") {
+    if (state.themeMode === "カスタム") {
+      state.customMajority = ($("#customMaj")?.value || "").trim();
+      state.customWolf = ($("#customWolf")?.value || "").trim();
+    }
+    const names = syncPlayersFromRoster();
+    if (names.length < 3) {
+      alert("3人以上選んでください");
+      return;
+    }
+  } else {
+    // Replay with same members
+    state.playerCount = state.players.length;
+    state.wolfCount = 1;
+  }
+
+  const picked = pickWordPair();
+  if (picked.error) {
+    alert(picked.error);
+    return;
+  }
+  state.theme = picked.theme;
+  state.majorityWord = picked.majority;
+  state.wolfWord = picked.wolf;
+
+  // Assign wolves
+  const indices = shuffle([...Array(state.playerCount).keys()]);
+  const wolfSet = new Set(indices.slice(0, state.wolfCount));
+  const order = shuffle([...Array(state.playerCount).keys()]);
+
+  state.assignments = order.map((pi) => ({
+    name: state.players[pi],
+    word: wolfSet.has(pi) ? state.wolfWord : state.majorityWord,
+    isWolf: wolfSet.has(pi),
+    playerIndex: pi,
+  }));
+
+  state.revealIndex = 0;
+  state.revealShown = false;
+  state.votes = {};
+  state.voteIndex = 0;
+  state.selectedVote = null;
+  state.accused = null;
+  state.runoffCandidates = null;
+  state.isRunoff = false;
+  state.discussLeft = state.discussSeconds;
+  state._scoresApplied = false;
+  state.roundDeltas = {};
+  state.peek = null;
+
+  setPhase("reveal");
+}
+
+/* ========== REVEAL ========== */
+function renderReveal() {
+  const total = state.assignments.length;
+  const cur = state.assignments[state.revealIndex];
+  const dots = state.assignments.map((_, i) => {
+    let cls = "";
+    if (i < state.revealIndex) cls = "done";
+    else if (i === state.revealIndex) cls = "current";
+    return `<span class="${cls}"></span>`;
+  }).join("");
+
+  if (!state.revealShown) {
+    $("#main").innerHTML = `
+      <div class="progress-dots">${dots}</div>
+      <div class="reveal-cover">
+        <div class="pass-icon">📱</div>
+        <div class="who">${escapeHtml(cur.name)}さんに渡してね</div>
+        <p class="muted">本人だけが見えるようにしてから、下のボタンを押してね。</p>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-primary" id="btnShowWord">言葉を見る</button>
+      </div>
+    `;
+    $("#btnShowWord").addEventListener("click", () => {
+      state.revealShown = true;
+      render();
+    });
+    return;
+  }
+
+  $("#main").innerHTML = `
+    <div class="progress-dots">${dots}</div>
+    <p class="muted" style="text-align:center">${escapeHtml(cur.name)}さんの言葉</p>
+    <div class="word-card">
+      <div class="word">${escapeHtml(cur.word)}</div>
+      <div class="role-hint">この言葉を覚えたら、すぐに隠してね</div>
+    </div>
+    <div class="hint">⚠️ 他の人に見られないように注意！</div>
+    <div class="footer-actions">
+      <button class="btn btn-secondary" id="btnHideNext">${state.revealIndex < total - 1 ? "隠して次へ" : "隠してディスカッションへ"}</button>
+    </div>
+  `;
+  $("#btnHideNext").addEventListener("click", () => {
+    state.revealShown = false;
+    if (state.revealIndex < total - 1) {
+      state.revealIndex++;
+      render();
+    } else {
+      setPhase("discuss");
+    }
+  });
+}
+
+
+/* ========== PEEK (re-check own word mid-game) ========== */
+function startPeek() {
+  if (state.phase !== "discuss" && state.phase !== "vote") return;
+  const wasRunning = !!state.timerId;
+  if (wasRunning) stopTimer();
+  state.peek = { step: "pick", name: null, resumeTimer: wasRunning && state.phase === "discuss" };
+  updatePeekButton();
+  render();
+}
+
+function endPeek() {
+  const resume = state.peek && state.peek.resumeTimer && state.phase === "discuss";
+  state.peek = null;
+  updatePeekButton();
+  render();
+  if (resume && !state.timerId && state.discussLeft > 0) {
+    // Resume discussion timer after confirm
+    state.timerId = setInterval(() => {
+      state.discussLeft--;
+      const elT = $("#timerEl");
+      const btn = $("#btnTimer");
+      if (elT) {
+        elT.textContent = formatTime(Math.max(0, state.discussLeft));
+        if (state.discussLeft <= 30) elT.classList.add("warn");
+      }
+      if (btn) btn.textContent = "一時停止";
+      if (state.discussLeft <= 0) {
+        stopTimer();
+        if (navigator.vibrate) try { navigator.vibrate([200,100,200]); } catch(_){}
+        if (state.phase === "discuss" && !state.peek) renderDiscuss();
+      }
+    }, 1000);
+    const btn = $("#btnTimer");
+    if (btn) btn.textContent = "一時停止";
+  }
+}
+
+function renderPeek() {
+  const peek = state.peek;
+  if (!peek) return false;
+
+  if (peek.step === "pick") {
+    const names = state.assignments.map(a => a.name);
+    const opts = names.map(n =>
+      `<button type="button" class="pick-opt" data-name="${escapeHtml(n)}">${escapeHtml(n)}</button>`
+    ).join("");
+    $("#main").innerHTML = `
+      <h2>言葉を確認</h2>
+      <p class="muted">自分の名前を選んでください。他の人の言葉は見えません。</p>
+      ${state.phase === "discuss" && peek.resumeTimer ? `<div class="hint">⏱ 確認中はタイマーを一時停止しています。隠すと再開します。</div>` : ""}
+      <div class="pick-list" id="peekPick">${opts}</div>
+      <div class="footer-actions">
+        <button class="btn btn-ghost" id="btnPeekCancel">やめる</button>
+      </div>
+    `;
+    $("#peekPick").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-name]");
+      if (!b) return;
+      state.peek.name = b.dataset.name;
+      state.peek.step = "cover";
+      render();
+    });
+    $("#btnPeekCancel").addEventListener("click", endPeek);
+    return true;
+  }
+
+  if (peek.step === "cover") {
+    const who = peek.name;
+    $("#main").innerHTML = `
+      <h2>言葉を確認</h2>
+      <div class="reveal-cover">
+        <div class="pass-icon">📱</div>
+        <div class="who">${escapeHtml(who)}さんに渡してね</div>
+        <p class="muted">本人だけが見えるようにしてから、下のボタンを押してね。</p>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-primary" id="btnPeekShow">言葉を見る</button>
+        <button class="btn btn-ghost" id="btnPeekBack">名前を選び直す</button>
+      </div>
+    `;
+    $("#btnPeekShow").addEventListener("click", () => {
+      state.peek.step = "show";
+      render();
+    });
+    $("#btnPeekBack").addEventListener("click", () => {
+      state.peek.step = "pick";
+      state.peek.name = null;
+      render();
+    });
+    return true;
+  }
+
+  // show — word only, no wolf/villager role label
+  const asg = state.assignments.find(a => a.name === peek.name);
+  const word = asg ? asg.word : "？";
+  $("#main").innerHTML = `
+    <h2>言葉を確認</h2>
+    <p class="muted" style="text-align:center">${escapeHtml(peek.name)}さんの言葉</p>
+    <div class="word-card">
+      <div class="word">${escapeHtml(word)}</div>
+      <div class="role-hint">この言葉を覚えたら、すぐに隠してね</div>
+    </div>
+    <div class="hint">⚠️ 他の人に見られないように注意！</div>
+    <div class="footer-actions">
+      <button class="btn btn-secondary" id="btnPeekHide">隠す</button>
+    </div>
+  `;
+  $("#btnPeekHide").addEventListener("click", endPeek);
+  return true;
+}
+
+/* ========== DISCUSS ========== */
+function stopTimer() {
+  if (state.timerId) {
+    clearInterval(state.timerId);
+    state.timerId = null;
+  }
+}
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function renderDiscuss() {
+  const warn = state.discussLeft <= 30;
+  const running = !!state.timerId;
+  $("#main").innerHTML = `
+    <h2>ディスカッション</h2>
+    <div style="text-align:center">
+      <span class="theme-badge">テーマ: ${escapeHtml(state.theme)}</span>
+    </div>
+    <div class="hint">💡 お題の言葉そのものは言わずに、特徴や印象を話題にしよう。</div>
+    <div class="timer-display">
+      <div class="time ${warn ? "warn" : ""}" id="timerEl">${formatTime(state.discussLeft)}</div>
+      <p class="muted" style="margin-top:8px">残り時間</p>
+    </div>
+    <h3>時間の長さ</h3>
+    <div class="chip-row" id="durChips">
+      ${[60,120,180,240,300].map(s =>
+        `<button type="button" class="chip ${state.discussSeconds===s?"on":""}" data-sec="${s}">${s/60}分</button>`
+      ).join("")}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="btnTimer">${running ? "一時停止" : (state.discussLeft < state.discussSeconds ? "再開" : "スタート")}</button>
+      <button class="btn btn-ghost" id="btnResetT">リセット</button>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-secondary" id="btnPeekInCard">言葉を確認</button>
+      <button class="btn btn-primary" id="btnToVote">投票へ進む</button>
+    </div>
+  `;
+
+  $("#btnPeekInCard").addEventListener("click", startPeek);
+  $("#durChips").addEventListener("click", (e) => {
+    const c = e.target.closest("[data-sec]");
+    if (!c) return;
+    stopTimer();
+    state.discussSeconds = +c.dataset.sec;
+    state.discussLeft = state.discussSeconds;
+    renderDiscuss();
+  });
+  $("#btnTimer").addEventListener("click", () => {
+    if (state.timerId) {
+      stopTimer();
+      renderDiscuss();
+      return;
+    }
+    if (state.discussLeft <= 0) state.discussLeft = state.discussSeconds;
+    state.timerId = setInterval(() => {
+      state.discussLeft--;
+      const el = $("#timerEl");
+      const btn = $("#btnTimer");
+      if (el) {
+        el.textContent = formatTime(Math.max(0, state.discussLeft));
+        if (state.discussLeft <= 30) el.classList.add("warn");
+      }
+      if (btn) btn.textContent = "一時停止";
+      if (state.discussLeft <= 0) {
+        stopTimer();
+        if (navigator.vibrate) try { navigator.vibrate([200,100,200]); } catch(_){}
+        renderDiscuss();
+      }
+    }, 1000);
+    const btn = $("#btnTimer");
+    if (btn) btn.textContent = "一時停止";
+  });
+  $("#btnResetT").addEventListener("click", () => {
+    stopTimer();
+    state.discussLeft = state.discussSeconds;
+    renderDiscuss();
+  });
+  $("#btnToVote").addEventListener("click", () => {
+    stopTimer();
+    state.voteIndex = 0;
+    state.votes = {};
+    state.selectedVote = null;
+    state.isRunoff = false;
+    state.runoffCandidates = null;
+    setPhase("vote");
+  });
+}
+
+/* ========== VOTE ========== */
+function voterOrder() {
+  // Same pass order as reveal for consistency
+  return state.assignments.map(a => a.name);
+}
+
+function voteTargets() {
+  if (state.isRunoff && state.runoffCandidates) {
+    return state.runoffCandidates;
+  }
+  return state.players;
+}
+
+function renderVote() {
+  const voters = voterOrder();
+  // skip voters who already voted in runoff? In runoff everyone votes again among tied
+  const curVoter = voters[state.voteIndex];
+  const targets = voteTargets();
+  const done = Object.keys(state.votes).length;
+  const total = voters.length;
+
+  // Cover screen first (pass-and-play)
+  if (!state._voteUnlocked) {
+    $("#main").innerHTML = `
+      <h2>${state.isRunoff ? "決選投票" : "投票"}</h2>
+      ${state.isRunoff ? `<div class="hint">同票のため決選投票です。上位の候補からウルフを選び直してください。</div>` : `
+      <p class="muted">ウルフだと思う人に投票します。1人ずつ端末を回してください。</p>`}
+      <div class="progress-dots">${voters.map((_,i)=>`<span class="${i<state.voteIndex?"done":i===state.voteIndex?"current":""}"></span>`).join("")}</div>
+      <div class="reveal-cover">
+        <div class="pass-icon">🗳️</div>
+        <div class="who">${escapeHtml(curVoter)}さんの番</div>
+        <p class="muted">${escapeHtml(curVoter)}さんに渡してから進んでね<br>（${state.voteIndex+1} / ${total}）</p>
+      </div>
+      <div class="footer-actions">
+        <button class="btn btn-primary" id="btnUnlockVote">投票する</button>
+        <button class="btn btn-ghost" id="btnPeekInVote">言葉を確認</button>
+      </div>
+    `;
+    $("#btnPeekInVote").addEventListener("click", startPeek);
+    $("#btnUnlockVote").addEventListener("click", () => {
+      state._voteUnlocked = true;
+      state.selectedVote = null;
+      render();
+    });
+    return;
+  }
+
+  const opts = targets.map(name => {
+    const self = name === curVoter;
+    // allow self-vote? Usually no — disable self
+    return `<button type="button" class="vote-opt ${state.selectedVote===name?"selected":""}" data-name="${escapeHtml(name)}" ${self?"disabled":""}>
+      ${escapeHtml(name)}${self ? "（自分）" : ""}
+    </button>`;
+  }).join("");
+
+  $("#main").innerHTML = `
+    <h2>${escapeHtml(curVoter)}さんの投票</h2>
+    <p class="muted">ウルフだと思う人を選んでください。選んだら「確定」を押して端末を隠してください。</p>
+    <div class="vote-grid" id="voteGrid">${opts}</div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" id="btnConfirmVote" ${state.selectedVote?"":"disabled"}>この人に投票して次へ</button>
+    </div>
+  `;
+  $("#voteGrid").addEventListener("click", (e) => {
+    const b = e.target.closest(".vote-opt:not(:disabled)");
+    if (!b) return;
+    state.selectedVote = b.dataset.name;
+    render();
+  });
+  $("#btnConfirmVote").addEventListener("click", () => {
+    if (!state.selectedVote) return;
+    state.votes[curVoter] = state.selectedVote;
+    state._voteUnlocked = false;
+    state.selectedVote = null;
+    if (state.voteIndex < voters.length - 1) {
+      state.voteIndex++;
+      render();
+    } else {
+      finishVoting();
+    }
+  });
+}
+
+function tallyVotes() {
+  const counts = {};
+  for (const t of Object.values(state.votes)) {
+    counts[t] = (counts[t] || 0) + 1;
+  }
+  return counts;
+}
+
+function finishVoting() {
+  const counts = tallyVotes();
+  const max = Math.max(...Object.values(counts), 0);
+  const tied = Object.keys(counts).filter(n => counts[n] === max);
+
+  if (tied.length > 1 && !state.isRunoff) {
+    // Runoff among tied
+    state.isRunoff = true;
+    state.runoffCandidates = tied;
+    state.votes = {};
+    state.voteIndex = 0;
+    state._voteUnlocked = false;
+    state.selectedVote = null;
+    render();
+    return;
+  }
+
+  // Clear rule: first runoff still tied → random among tied
+  if (tied.length > 1) {
+    state.accused = tied[Math.floor(Math.random() * tied.length)];
+    state._tieBrokenRandom = true;
+  } else {
+    state.accused = tied[0];
+    state._tieBrokenRandom = false;
+  }
+  state._finalTally = counts;
+  setPhase("result");
+}
+
+/* ========== RESULT ========== */
+function renderResult() {
+  const wolves = state.assignments.filter(a => a.isWolf);
+  const wolfNames = wolves.map(w => w.name);
+  const villagersWin = wolfNames.includes(state.accused);
+  const counts = state._finalTally || tallyVotes();
+  const tallyHtml = Object.entries(counts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([n,c]) => `<li class="${n===state.accused?"accused":""}"><span>${escapeHtml(n)}</span><span>${c}票</span></li>`)
+    .join("");
+
+  if (!state._scoresApplied) {
+    applyRoundScores(villagersWin);
+    state._scoresApplied = true;
+  }
+
+  const ranks = rankingRows(state.players);
+  const rankHtml = ranks.map((r, i) => {
+    const deltaStr = r.delta == null ? "" : (r.delta > 0 ? `+${r.delta}` : "+0");
+    const deltaCls = r.delta > 0 ? "delta" : "delta zero";
+    return `<li class="${i===0?"top":""}">
+      <span class="rank">${i+1}</span>
+      <span class="pname">${escapeHtml(r.name)}</span>
+      ${r.delta == null ? "" : `<span class="${deltaCls}">${deltaStr}</span>`}
+      <span class="pts">${r.points}点</span>
+    </li>`;
+  }).join("");
+
+  const scoreHelp = `
+    <div class="score-help">
+      <strong>ポイントルール</strong><br>
+      ・本物のウルフに投票で当てた人は、勝敗に関係なく +1点。<br>
+      ・ウルフが勝ち（告発が外れた）: 当てた人の +1 に加え、ウルフ本人それぞれ +2点。<br>
+      ・2人ウルフで片方だけ告発成功でも村人勝ち扱い。
+    </div>`;
+
+  const wolfNameSet = new Set(wolfNames);
+  const voteOrder = state.assignments.map(a => a.name);
+  const voteLogHtml = voteOrder.map((voter) => {
+    const target = state.votes[voter];
+    if (!target) {
+      return `<li><span>${escapeHtml(voter)}</span><span class="muted">（未投票）</span></li>`;
+    }
+    const hit = wolfNameSet.has(target);
+    return `<li>
+      <span><span>${escapeHtml(voter)}</span><span class="arrow">→</span><span>${escapeHtml(target)}</span></span>
+      ${hit ? `<span class="hit">ウルフ的中</span>` : ""}
+    </li>`;
+  }).join("");
+
+  const wordsHtml = state.assignments.map((a) => {
+    return `<li class="${a.isWolf ? "is-wolf" : ""}">
+      <span class="wname">${escapeHtml(a.name)}</span>
+      <span class="wword">${escapeHtml(a.word)}</span>
+      ${a.isWolf ? `<span class="wolf-tag">🐺 ウルフ</span>` : ""}
+    </li>`;
+  }).join("");
+
+  $("#main").innerHTML = `
+    <div class="result-banner ${villagersWin ? "villagers" : "wolves"}">
+      ${villagersWin ? "🎉 村人の勝ち！" : "🐺 ウルフの勝ち！"}
+    </div>
+    ${state._tieBrokenRandom ? `<div class="hint">決選投票も同票だったため、抽選で「${escapeHtml(state.accused)}」さんが告発されました。</div>` : ""}
+    <h3>全員の名前と言葉</h3>
+    <ul class="words-list">${wordsHtml}</ul>
+    <div class="result-block">
+      <div class="label">告発された人</div>
+      <div class="value">${escapeHtml(state.accused)}</div>
+    </div>
+    <div class="result-block">
+      <div class="label">本当のウルフ</div>
+      <div class="value">${wolfNames.map(escapeHtml).join("、")}</div>
+    </div>
+    <div class="result-block">
+      <div class="label">多数派の言葉</div>
+      <div class="value">${escapeHtml(state.majorityWord)}</div>
+    </div>
+    <div class="result-block">
+      <div class="label">ウルフの言葉</div>
+      <div class="value">${escapeHtml(state.wolfWord)}</div>
+    </div>
+    <h3>投票一覧</h3>
+    <ul class="vote-log">${voteLogHtml}</ul>
+    <h3>得票</h3>
+    <ul class="tally-list">${tallyHtml}</ul>
+    <h3>ポイントランキング / 累計</h3>
+    ${scoreHelp}
+    <ul class="rank-list">${rankHtml}</ul>
+    <p class="muted" style="margin-bottom:8px">ルール：告発された人がウルフなら村人の勝ち。それ以外はウルフの勝ち。同票は決選投票→それでも同票なら抽選。ポイントは端末に保存され、もう一回しても持ち越されます。</p>
+    <div class="footer-actions">
+      <button class="btn btn-ok" id="btnAgain">もう一回（同じメンバー）</button>
+      <button class="btn btn-secondary" id="btnSetup">設定に戻る</button>
+      <button class="btn btn-ghost" id="btnResetPts">ポイントをリセット</button>
+    </div>
+  `;
+  $("#btnAgain").addEventListener("click", () => {
+    // Keep players, wolf count, theme mode, discussSeconds, and cumulative scores
+    startGame();
+  });
+  $("#btnSetup").addEventListener("click", () => {
+    stopTimer();
+    state._voteUnlocked = false;
+    // Restore chips from last round's players (roster order)
+    ensureRosterSelection();
+    const playing = new Set(state.players);
+    state.rosterSelected = DEFAULT_ROSTER.map((n) => playing.has(n));
+    if (selectedRosterNames().length < 3) {
+      state.rosterSelected = DEFAULT_ROSTER.map(() => true);
+    }
+    setPhase("setup");
+  });
+  $("#btnResetPts").addEventListener("click", () => {
+    confirmResetScores(() => renderResult());
+  });
+}
+
+/* ========== RENDER ========== */
+function render() {
+  updatePeekButton();
+  if (state.peek && (state.phase === "discuss" || state.phase === "vote")) {
+    if (renderPeek()) return;
+  }
+  switch (state.phase) {
+    case "setup": renderSetup(); break;
+    case "reveal": renderReveal(); break;
+    case "discuss": renderDiscuss(); break;
+    case "vote": renderVote(); break;
+    case "result": renderResult(); break;
+    default: renderSetup();
+  }
+}
+
+// Init
+$("#btnAbort").addEventListener("click", abortToSetup);
+$("#btnPeek").addEventListener("click", startPeek);
+updateAbortButton();
+updatePeekButton();
+render();
+</script>
 </body>
 </html>
